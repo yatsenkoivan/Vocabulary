@@ -54,6 +54,7 @@ class Manager
     readonly static private int tab_size = 20;
     readonly static private int error_level = 4;
     private Data data;
+    private Vocabulary? current_voc;
     public Manager() {
         data = new();
     }
@@ -65,8 +66,8 @@ class Manager
         string title = "Menu";
         string[] msg = {
             "Add vocabulary",
-            "Edit vocabulary",
             "Remove vocabulary",
+            "Go to vocabulary",
             "Exit"
         };
         Show(title, msg);
@@ -83,14 +84,15 @@ class Manager
                         CreateVocabulary();
                         break;
                     case 1:
-                        //EditVocabulary();
+                        RemoveVocabulary();
                         break;
                     case 2:
-                        RemoveVocabulary();
+                        GoToVocabulary();
                         break;
                     case 3:
                         return;
                 }
+                Console.BackgroundColor = ConsoleColor.DarkGray;
                 Console.Clear();
                 Show(title, msg, move);
             }
@@ -150,10 +152,6 @@ class Manager
             }
         } while (move != limit);
     }
-    public void EditVocabulary()
-    {
-
-    }
     public void RemoveVocabulary()
     {
         Console.Clear();
@@ -208,6 +206,102 @@ class Manager
                 Show(title, msg, move);
                 ShowValue(lang1, 0);
                 ShowValue(lang2, 1);
+            }
+        } while (move != limit);
+    }
+    public void GoToVocabulary()
+    {
+        Console.Clear();
+        string title = "Go to vocabulary";
+        string[] msg = {
+            "First language:",
+            "Second language:",
+            "Submit",
+            "Back",
+        };
+
+        string lang1 = "";
+        string lang2 = "";
+
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        EnterValue(out lang1);
+                        break;
+                    case 1:
+                        EnterValue(out lang2);
+                        break;
+                    case 2:
+                        if (lang1 == "" || lang2 == "") MSG("! Language cannot be empty !");
+                        else if (lang1 == lang2) MSG("! Languages must be different !");
+                        else
+                        {
+                            Vocabulary? v = data.Vocabularies.Find(voc => voc.Languages == (lang1, lang2));
+                            if (v == null)
+                            {
+                                MSG("! Vocabulary do not exist !");
+                                break;
+                            }
+                            current_voc = v;
+                            VocabularyMenu();
+                            return;
+                        }
+                        break;
+                    case 3:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+                ShowValue(lang1, 0);
+                ShowValue(lang2, 1);
+            }
+        } while (move != limit);
+    }
+    public void VocabularyMenu()
+    {
+        if (current_voc == null) return;
+        Console.BackgroundColor = ConsoleColor.DarkBlue;
+        Console.Clear();
+        string title = $"Vocabulary {current_voc.Languages.Item1} - {current_voc.Languages.Item2}";
+        string[] msg = {
+            "Find word",
+            "Add word",
+            "Remove word",
+            "Back",
+        };
+
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        //FindWord();
+                        break;
+                    case 1:
+                        //AddWord();
+                        break;
+                    case 2:
+                        //RemoveWord();
+                        break;
+                    case 3:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
             }
         } while (move != limit);
     }
