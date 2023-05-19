@@ -86,7 +86,7 @@ class Manager
                         //EditVocabulary();
                         break;
                     case 2:
-                        //RemoveVocabulary();
+                        RemoveVocabulary();
                         break;
                     case 3:
                         return;
@@ -135,8 +135,69 @@ class Manager
                         {
                             Vocabulary v = new Vocabulary(lang1, lang2);
                             data.Vocabularies.Add(v);
-                            data.AppendData(v);
+                            data.WriteData();
                             MSG("Vocabulary created");
+                            return;
+                        }
+                        break;
+                    case 3:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+                ShowValue(lang1, 0);
+                ShowValue(lang2, 1);
+            }
+        } while (move != limit);
+    }
+    public void EditVocabulary()
+    {
+
+    }
+    public void RemoveVocabulary()
+    {
+        Console.Clear();
+        string title = "Create vocabulary";
+        string[] msg = {
+            "First language:",
+            "Second language:",
+            "Submit",
+            "Back",
+        };
+
+        string lang1 = "";
+        string lang2 = "";
+
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        EnterValue(out lang1);
+                        break;
+                    case 1:
+                        EnterValue(out lang2);
+                        break;
+                    case 2:
+                        if (lang1 == "" || lang2 == "") MSG("! Language cannot be empty !");
+                        else if (lang1 == lang2) MSG("! Languages must be different !");
+                        else
+                        {
+                            int index = data.Vocabularies.FindIndex(voc => voc.Languages == (lang1, lang2));
+                            if (index == -1)
+                            {
+                                MSG("! Vocabulary do not exist !");
+                                break;
+                            }
+                            data.Vocabularies.RemoveAt(index);
+                            data.WriteData();
+                            MSG("Vocabulary removed");
                             return;
                         }
                         break;
@@ -236,15 +297,11 @@ class Data
         catch (Exception) { }
         fs.Close();
     }
-    public void AppendData(Vocabulary v)
+    public void WriteData()
     {
         BinaryFormatter bf = new();
-        if (File.Exists(data_path) == false)
-        {
-            File.Create(data_path);
-        }
-        FileStream fs = new FileStream(data_path, FileMode.Append, FileAccess.Write);
-        bf.Serialize(fs, v);
+        FileStream fs = new FileStream(data_path, FileMode.OpenOrCreate, FileAccess.Write);
+        bf.Serialize(fs, vocabularies);
         fs.Close();
     }
 }
