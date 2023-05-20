@@ -272,6 +272,7 @@ class Manager
         Console.Clear();
         string title = $"Vocabulary {current_voc.Languages.Item1} - {current_voc.Languages.Item2}";
         string[] msg = {
+            "Show words",
             "Find word",
             "Add word",
             "Remove word",
@@ -289,15 +290,21 @@ class Manager
                 switch (move)
                 {
                     case 0:
-                        FindWord();
+                        Console.Clear();
+                        Console.WriteLine(title);
+                        current_voc.ShowWords();
+                        MSG("\nPress any key to continue ...");
                         break;
                     case 1:
-                        AddWord();
+                        FindWord();
                         break;
                     case 2:
-                        //RemoveWord();
+                        AddWord();
                         break;
                     case 3:
+                        RemoveWord();
+                        break;
+                    case 4:
                         return;
                 }
                 Console.Clear();
@@ -332,7 +339,11 @@ class Manager
                     case 1:
                         if (word == "") MSG("! Word cannot be empty !");
                         else if (current_voc.Translations.ContainsKey(word) == false) MSG("! Word is not in the vocabulary !");
-                        else WordMenu(word);
+                        else
+                        {
+                            WordMenu(word);
+                            return;
+                        }
                         break;
                     case 2:
                         return;
@@ -394,6 +405,51 @@ class Manager
             }
         } while (move != limit);
     }
+    public void RemoveWord()
+    {
+        if (current_voc == null) return;
+        Console.Clear();
+        string title = $"{current_voc.Languages.Item1} - {current_voc.Languages.Item2}\tRemove word";
+        string[] msg = {
+            "Word:",
+            "Submit",
+            "Back"
+        };
+        string word = "";
+
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        EnterValue(out word);
+                        break;
+                    case 1:
+                        if (word == "") MSG("! Word cannot be empty !");
+                        else if (!current_voc.Translations.ContainsKey(word) == true) MSG("! Word does not exist !");
+                        else
+                        {
+                            current_voc.Translations.Remove(word);
+                            data.WriteData();
+                            MSG("Word Removed");
+                            return;
+                        }
+                        break;
+                    case 2:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+                ShowValue(word, 0);
+            }
+        } while (move != limit);
+    }
     public void WordMenu(string word)
     {
         if (current_voc == null) return;
@@ -426,7 +482,7 @@ class Manager
                         AddTranslation(word);
                         break;
                     case 2:
-                        //Remove
+                        RemoveTranslation(word);
                         break;
                     case 3:
                         return;
@@ -469,6 +525,57 @@ class Manager
                             current_voc.Translations[word].Add(translation);
                             data.WriteData();
                             MSG("Translation added");
+                            return;
+                        }
+                        break;
+                    case 2:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+                ShowValue(translation, 0);
+            }
+        } while (move != limit);
+    }
+    public void RemoveTranslation(string word)
+    {
+        if (current_voc == null) return;
+        if (current_voc.Translations.ContainsKey(word) == false) return;
+        Console.Clear();
+        if (current_voc.Translations[word].Count == 1)
+        {
+            ShowValue($"You cannot delete the only 1 translation ({current_voc.Translations[word][0]})", 0);
+            MSG("\nPress any key to continue ...");
+            return;
+        }
+        string title = $"{current_voc.Languages.Item1} - {current_voc.Languages.Item2}\tWord: {word}\tRemove translation";
+        string[] msg = {
+            "Translation: ",
+            "Submit",
+            "Back"
+        };
+        string translation = "";
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        EnterValue(out translation);
+                        break;
+                    case 1:
+                        if (translation == "") MSG("! Translation cannot be empty !");
+                        else if (!current_voc.Translations[word].Contains(translation)) MSG("! Translation does not exist !");
+                        else
+                        {
+                            current_voc.Translations[word].Remove(translation);
+                            data.WriteData();
+                            MSG("Translation removed");
                             return;
                         }
                         break;
@@ -550,6 +657,16 @@ class Vocabulary
     public (string,string) Languages
     {
         get { return (lang1, lang2); }
+    }
+    public void ShowWords()
+    {
+        int index = 1;
+        Console.WriteLine("Words:");
+        foreach(string word in translations.Keys)
+        {
+            Console.WriteLine($"{index}) " + word);
+            index++;
+        }
     }
     public void ShowTranslations(string word)
     {
