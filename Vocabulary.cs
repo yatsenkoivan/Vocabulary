@@ -544,8 +544,8 @@ class Manager
         Console.Clear();
         if (current_voc.Translations[word].Count == 1)
         {
-            ShowValue($"You cannot delete the only 1 translation ({current_voc.Translations[word][0]})", 0);
-            MSG("\nPress any key to continue ...");
+            MSG($"You cannot delete the only 1 translation ({current_voc.Translations[word][0]})"
+                + "\nPress any key to continue ...");
             return;
         }
         string title = $"{current_voc.Languages.Item1} - {current_voc.Languages.Item2}\tWord: {word}\tRemove translation";
