@@ -417,10 +417,13 @@ class Manager
                 switch (move)
                 {
                     case 0:
-                        //Show
+                        Console.Clear();
+                        Console.WriteLine(title);
+                        current_voc.ShowTranslations(word);
+                        MSG("Press any key to continue ...");
                         break;
                     case 1:
-                        //Add
+                        AddTranslation(word);
                         break;
                     case 2:
                         //Remove
@@ -430,6 +433,51 @@ class Manager
                 }
                 Console.Clear();
                 Show(title, msg, move);
+            }
+        } while (move != limit);
+    }
+    public void AddTranslation(string word)
+    {
+        if (current_voc == null) return;
+        if (current_voc.Translations.ContainsKey(word) == false) return;
+        Console.Clear();
+        string title = $"{current_voc.Languages.Item1} - {current_voc.Languages.Item2}\tWord: {word}\tAdd translation";
+        string[] msg = {
+            "Translation: ",
+            "Submit",
+            "Back"
+        };
+        string translation = "";
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        EnterValue(out translation);
+                        break;
+                    case 1:
+                        if (translation == "") MSG("! Translation cannot be empty !");
+                        else if (current_voc.Translations[word].Contains(translation)) MSG("! Translation already exist !");
+                        else
+                        {
+                            current_voc.Translations[word].Add(translation);
+                            data.WriteData();
+                            MSG("Translation added");
+                            return;
+                        }
+                        break;
+                    case 2:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+                ShowValue(translation, 0);
             }
         } while (move != limit);
     }
@@ -499,10 +547,20 @@ class Vocabulary
     {
         get { return translations; }
     }
-
     public (string,string) Languages
     {
         get { return (lang1, lang2); }
+    }
+    public void ShowTranslations(string word)
+    {
+        if (translations.ContainsKey(word) == false) return;
+        Console.WriteLine($"Translations:");
+        int index = 1;
+        foreach(string translation in translations[word])
+        {
+            Console.WriteLine($"{index}) " + translation);
+            index++;
+        }
     }
 }
 class Data
