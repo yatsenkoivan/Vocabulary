@@ -107,7 +107,7 @@ class Manager
             "First language:",
             "Second language:",
             "Submit",
-            "Back",
+            "Back"
         };
 
         string lang1="";
@@ -160,7 +160,7 @@ class Manager
             "First language:",
             "Second language:",
             "Submit",
-            "Back",
+            "Back"
         };
 
         string lang1 = "";
@@ -217,7 +217,7 @@ class Manager
             "First language:",
             "Second language:",
             "Submit",
-            "Back",
+            "Back"
         };
 
         string lang1 = "";
@@ -247,7 +247,7 @@ class Manager
                             Vocabulary? v = data.Vocabularies.Find(voc => voc.Languages == (lang1, lang2));
                             if (v == null)
                             {
-                                MSG("! Vocabulary do not exist !");
+                                MSG("! Vocabulary does not exist !");
                                 break;
                             }
                             current_voc = v;
@@ -275,7 +275,7 @@ class Manager
             "Find word",
             "Add word",
             "Remove word",
-            "Back",
+            "Back"
         };
 
         Show(title, msg);
@@ -289,13 +289,141 @@ class Manager
                 switch (move)
                 {
                     case 0:
-                        //FindWord();
+                        FindWord();
                         break;
                     case 1:
-                        //AddWord();
+                        AddWord();
                         break;
                     case 2:
                         //RemoveWord();
+                        break;
+                    case 3:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+            }
+        } while (move != limit);
+    }
+    public void FindWord()
+    {
+        if (current_voc == null) return;
+        Console.Clear();
+        string title = $"{current_voc.Languages.Item1} - {current_voc.Languages.Item2}\tFind word";
+        string[] msg = {
+            "Word:",
+            "Submit",
+            "Back"
+        };
+        string word = "";
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        EnterValue(out word);
+                        break;
+                    case 1:
+                        if (word == "") MSG("! Word cannot be empty !");
+                        else if (current_voc.Translations.ContainsKey(word) == false) MSG("! Word is not in the vocabulary !");
+                        else WordMenu(word);
+                        break;
+                    case 2:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+                ShowValue(word, 0);
+            }
+        } while (move != limit);
+    }
+    public void AddWord()
+    {
+        if (current_voc == null) return;
+        Console.Clear();
+        string title = $"{current_voc.Languages.Item1} - {current_voc.Languages.Item2}\tAdd word";
+        string[] msg = {
+            "Word:",
+            "Translation:",
+            "Submit",
+            "Back"
+        };
+        string word = "";
+        string translation = "";
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        EnterValue(out word);
+                        break;
+                    case 1:
+                        EnterValue(out translation);
+                        break;
+                    case 2:
+                        if (word == "") MSG("! Word cannot be empty !");
+                        else if (translation == "") MSG("! Translation cannot be empty! ");
+                        else if (current_voc.Translations.ContainsKey(word) == true) MSG("! Word already exist !");
+                        else
+                        {
+                            current_voc.Translations.Add(word, new List<string>(new[] { translation }));
+                            data.WriteData();
+                            MSG("Word Added");
+                            return;
+                        }
+                        break;
+                    case 3:
+                        return;
+                }
+                Console.Clear();
+                Show(title, msg, move);
+                ShowValue(word, 0);
+                ShowValue(translation, 1);
+            }
+        } while (move != limit);
+    }
+    public void WordMenu(string word)
+    {
+        if (current_voc == null) return;
+        if (current_voc.Translations.ContainsKey(word) == false) return;
+        Console.Clear();
+        string title = $"{current_voc.Languages.Item1} - {current_voc.Languages.Item2}\tWord: {word}";
+        string[] msg = {
+            "Show translations",
+            "Add translation",
+            "Remove translation",
+            "Back"
+        };
+        Show(title, msg);
+        int limit = msg.Length - 1;
+        int move;
+        do
+        {
+            move = Cursor.Cursor.Move(limit);
+            if (move != -1)
+            {
+                switch (move)
+                {
+                    case 0:
+                        //Show
+                        break;
+                    case 1:
+                        //Add
+                        break;
+                    case 2:
+                        //Remove
                         break;
                     case 3:
                         return;
@@ -360,10 +488,16 @@ class Vocabulary
 {
     private string lang1;
     private string lang2;
+    private Dictionary<string, List<string>> translations;
     public Vocabulary(string lang1, string lang2)
     {
         this.lang1 = lang1;
         this.lang2 = lang2;
+        translations = new Dictionary<string, List<string>>();
+    }
+    public Dictionary<string, List<string>> Translations
+    {
+        get { return translations; }
     }
 
     public (string,string) Languages
@@ -383,12 +517,14 @@ class Data
     {
         BinaryFormatter bf = new();
         FileStream fs = new FileStream(data_path, FileMode.OpenOrCreate, FileAccess.Read);
-        vocabularies = new List<Vocabulary>();
         try
         {
             vocabularies = (List<Vocabulary>)bf.Deserialize(fs);
         }
-        catch (Exception) { }
+        catch (Exception)
+        {
+            vocabularies = new List<Vocabulary>();
+        }
         fs.Close();
     }
     public void WriteData()
