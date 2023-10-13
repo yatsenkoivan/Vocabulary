@@ -65,6 +65,7 @@ class Manager
         Console.Clear();
         string title = "Menu";
         string[] msg = {
+            "Show vocabularies",
             "Add vocabulary",
             "Remove vocabulary",
             "Go to vocabulary",
@@ -81,15 +82,18 @@ class Manager
                 switch (move)
                 {
                     case 0:
-                        CreateVocabulary();
+                        ShowVocabularies();
                         break;
                     case 1:
-                        RemoveVocabulary();
+                        CreateVocabulary();
                         break;
                     case 2:
-                        GoToVocabulary();
+                        RemoveVocabulary();
                         break;
                     case 3:
+                        GoToVocabulary();
+                        break;
+                    case 4:
                         return;
                 }
                 Console.BackgroundColor = ConsoleColor.DarkGray;
@@ -98,6 +102,17 @@ class Manager
             }
         } while (move != limit);
 
+    }
+    public void ShowVocabularies()
+    {
+        Console.Clear();
+        foreach (Vocabulary v in data.Vocabularies)
+        {
+            Console.WriteLine($"{v.Languages.Item1} - {v.Languages.Item2}");
+        }
+        if (data.Vocabularies.Count == 0) Console.WriteLine("No vocabularies");
+        Console.WriteLine("Press any key to return ...");
+        Console.ReadKey(true);
     }
     public void CreateVocabulary()
     {
