@@ -170,7 +170,7 @@ class Manager
     public void RemoveVocabulary()
     {
         Console.Clear();
-        string title = "Create vocabulary";
+        string title = "Remove vocabulary";
         string[] msg = {
             "First language:",
             "Second language:",
